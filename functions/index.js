@@ -2,6 +2,7 @@ const functions = require("firebase-functions");
 const admin = require("firebase-admin");
 const PaytmChecksum = require("./PaytmChecksum");
 const https = require("https");
+const { request } = require("http");
 
 admin.initializeApp();
 
@@ -24,14 +25,17 @@ exports.getCheckSum = functions.https.onRequest((request, res) => {
     },
 
     enablePaymentMode:[{
-      mode: "UPI",
-      channels:["UPIPUSH","UPIPUSHEXPRESS","UPI"]
-    },{
        mode : "CREDIT_CARD",
        channels:["VISA","MASTER","AMEX"]
     },{
       mode:"DEBIT_CARD",
       channels:["VISA","MASTER","AMEX"],
+    },{
+      mode:"NET_BANKING",
+      channels:["SBI","PNB","HDFC","ICICI","BOB","AXIS"]
+    },{
+      mode:"UPI",
+      channels:["UPI","UPIPUSHEXPRESS","UPIPUSH"]
     }],
   
   };
@@ -43,6 +47,7 @@ exports.getCheckSum = functions.https.onRequest((request, res) => {
     .then((checksum) => {
       paytmParams.head = {
         signature: checksum,
+        channelID:"WAP",
       };
 
       var post_data = JSON.stringify(paytmParams);
