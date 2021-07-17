@@ -2,7 +2,6 @@ const functions = require("firebase-functions");
 const admin = require("firebase-admin");
 const PaytmChecksum = require("./PaytmChecksum");
 const https = require("https");
-const { request } = require("http");
 
 admin.initializeApp();
 
@@ -12,10 +11,10 @@ exports.getCheckSum = functions.https.onRequest((request, res) => {
 
   paytmParams.body = {
     requestType: "Payment",
-    mid: "wRkmOe59237351879270",
-    websiteName: "WEBSTAGING",
+    mid: "VGddxw58927804430478",
+    websiteName: "WEBSTAGING",  
     orderId: request.query.oId,
-    callbackUrl: "https://securegw-stage.paytm.in/theia/paytmCallback?ORDER_ID="+request.query.oId,
+    callbackUrl: "https://securegw.paytm.in/theia/paytmCallback?ORDER_ID="+request.query.oId,
     txnAmount: {
       value: request.query.amount,
       currency: "INR",
@@ -23,42 +22,39 @@ exports.getCheckSum = functions.https.onRequest((request, res) => {
     userInfo: {
       custId: request.query.custId,
     },
-
     enablePaymentMode:[{
-       mode : "CREDIT_CARD",
-       channels:["VISA","MASTER","AMEX"]
-    },{
-      mode:"DEBIT_CARD",
-      channels:["VISA","MASTER","AMEX"],
-    },{
-      mode:"NET_BANKING",
-      channels:["SBI","PNB","HDFC","ICICI","BOB","AXIS"]
-    },{
-      mode:"UPI",
-      channels:["UPI","UPIPUSHEXPRESS","UPIPUSH"]
-    }],
-  
+        mode : "CREDIT_CARD",
+        channels:["VISA","MASTER","AMEX"]
+     },{
+       mode:"DEBIT_CARD",
+       channels:["VISA","MASTER","AMEX"],
+     },{
+       mode:"NET_BANKING",
+       channels:["SBI","PNB","HDFC","ICICI","BOB","AXIS"]
+     },{
+       mode:"UPI",
+       channels:["UPI","UPIPUSHEXPRESS","UPIPUSH"]
+     }],
   };
 
   PaytmChecksum.generateSignature(
     JSON.stringify(paytmParams.body),
-    "Jf&eno32UcBVZ@ZY"
+    "m2PA5aXCtzgz_omT"
   )
     .then((checksum) => {
       paytmParams.head = {
         signature: checksum,
-        channelID:"WAP",
       };
 
       var post_data = JSON.stringify(paytmParams);
 
       var options = {
         /* for Staging */
-        hostname: "securegw-stage.paytm.in",
-        /* for Production */
-        // hostname: 'securegw.paytm.in',
+     //   hostname: "securegw-stage.paytm.in",
+        // for Production */
+         hostname: 'securegw.paytm.in',
         port: 443,
-        path: `/theia/api/v1/initiateTransaction?mid=wRkmOe59237351879270&orderId=${request.query.oId}`,
+        path: `/theia/api/v1/initiateTransaction?mid=VGddxw58927804430478&orderId=${request.query.oId}`,
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -82,4 +78,4 @@ exports.getCheckSum = functions.https.onRequest((request, res) => {
     .catch((err) => {
       console.error(err);
     });
-}); 
+});
